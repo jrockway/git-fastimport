@@ -12,4 +12,6 @@ build_requires 'Test::Exception';
 build_requires 'Test::More';
 build_requires 'ok';
 
+requires_external_bin 'git';
+
 WriteAll();
