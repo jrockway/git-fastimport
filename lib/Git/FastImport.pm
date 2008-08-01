@@ -36,17 +36,24 @@ has 'fast_import' => (
           $self->git,
             '--git-dir', $self->repository->subdir('.git')->stringify,
             '--work-tree', $self->repository->stringify,
-            qw/fast-import --date-format=raw/,
+            qw/fast-import --date-format=raw --quiet/,
             or confess "failed to open git process: $!";
 
         return $git_fh;
     },
 );
 
+has 'debug_fast_import' => (
+    is      => 'ro',
+    isa     => 'Bool',
+    default => sub { undef },
+);
+
 sub create_repository {
     my ($self) = @_;
     $self->repository->mkpath();
-    return system($self->git, '--git-dir', $self->repository->subdir('.git'), 'init');
+    return system($self->git, '--git-dir', $self->repository->subdir('.git'),
+                  'init', '--quiet');
 }
 
 sub run_command {
@@ -57,7 +64,7 @@ sub run_command {
       unless $command->does('Git::FastImport::Command');
 
     my $cmd = $command->format($self);
-    print $cmd;
+    print $cmd if $self->debug_fast_import;
     print {$git} $cmd;
     return 1;
 }

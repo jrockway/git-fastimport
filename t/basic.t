@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More tests => 4;
 use IPC::Cmd;
 
 use Git::FastImport;
@@ -10,14 +10,15 @@ use Directory::Scratch;
 use Test::Exception;
 
 my $tmp = Directory::Scratch->new;
+$tmp->mkdir('repo');
 
 my $fi = Git::FastImport->new(
-    repository => qq{$tmp},
+    repository => $tmp->exists('repo'),
 );
 isa_ok $fi, 'Git::FastImport';
 
 $fi->create_repository;
-ok $tmp->exists('.git'), 'created git repo';
+ok $tmp->exists('repo/.git'), 'created git repo';
 ok $fi->fast_import, 'have a fast-import process';
 
 lives_ok {
