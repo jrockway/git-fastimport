@@ -1,6 +1,7 @@
 package Git::FastImport::Command::AddFile;
 use Moose;
 use Moose::Util::TypeConstraints;
+use File::Slurp;
 
 with 'Git::FastImport::Command';
 
@@ -45,8 +46,22 @@ has 'debug_comment' => (
 );
 
 sub new_from_disk_file {
-    my ($self, $path) = @_;
-    die "not implemented";
+    my ($class, $path, $name) = @_;
+
+    confess "$path does not exist" unless -e $path;
+    confess "git cannot track directories" if -d $path;
+
+    my $content = read_file(qq{$path});
+    my $permissions =
+      -l $path ? '120000' :
+      -x $path ? '100755' :
+                 '100644' ;
+
+    return $class->new(
+        filename    => $name,
+        permissions => $permissions,
+        content     => $content,
+    );
 }
 
 sub content_length { length shift->content }

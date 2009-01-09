@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 use Test::More tests => 4;
-use IPC::Cmd;
 
 use Git::FastImport;
 use Git::FastImport::Command::Commit;
 use Git::FastImport::Command::AddFile;
+use Git::FastImport::Command::Tag;
+
 use Directory::Scratch;
 use Test::Exception;
 
@@ -31,6 +32,25 @@ lives_ok {
         filename => 'foo/bar.txt',
         content  => "Hello, world!\n",
     ));
+
+    $tmp->touch('baz', 'this is the baz file');
+
+    $fi->run_command(Git::FastImport::Command::AddFile->new_from_disk_file(
+        $tmp->exists('baz') => 'baz.txt',
+    ));
+
+    $f->run_command(Git::FastImport::Command::Tag->new(
+        message => 'tagging the test repository',
+        name    => 'test iteration 1',
+        from    => 'refs/head/master',
+        tagger  => {
+            name  => 'Jonathan Rockway',
+            email => 'jon@jrock.us',
+        },
+    );
 };
 
-close $fi->fast_import;
+warn $tmp;
+sleep 1234;
+
+$fi->fast_import->close;
